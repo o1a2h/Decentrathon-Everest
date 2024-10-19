@@ -4,9 +4,8 @@ using UnityEngine;
 
 public class CarController : MonoBehaviour
 {
+    public bool isAI;
 
-    public MeshRenderer carBody;
-    
     // Serializables
     public WheelColliders wheelColliders;
     public WheelMeshes wheelMeshes;
@@ -25,8 +24,11 @@ public class CarController : MonoBehaviour
     public float carGasPower;
     public float carBrakePower;
     private float carSlipAngle;
-    private float carSpeed;
+    public float carSpeed;
+    public float maxSteering;
     public AnimationCurve carSteeringCurve;
+
+    
 
     public ButtonController gasPedal;
     public ButtonController brakePedal;
@@ -57,15 +59,49 @@ public class CarController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        CheckInput();
+        carSpeed = carRB.velocity.magnitude;
+
+        if (!isAI)
+        {
+            CheckInput();
+
+            ApplySteering(inputSteering * carSteeringCurve.Evaluate(carSpeed));
+        }
+
 
         ApplyBrake();
-        ApplySteering();
         ApplyGas();
         ApplyUpdateWheels();
 
         ApplyParticles();
     }
+
+
+    public void SetInput(float throttleIn, float steeringIn)
+    {
+        inputGas = throttleIn;
+
+        ApplySteering(steeringIn);
+
+        carSlipAngle = Vector3.Angle(transform.forward, carRB.velocity - transform.forward);
+
+        //fixed code to brake even after going on reverse by Andrew Alex 
+        float movingDirection = Vector3.Dot(transform.forward, carRB.velocity);
+
+        if (movingDirection < -0.5f && inputGas > 0)
+        {
+            inputBrake = Mathf.Abs(inputGas);
+        }
+        else if (movingDirection > 0.5f && inputGas < 0)
+        {
+            inputBrake = Mathf.Abs(inputGas);
+        }
+        else
+        {
+            inputBrake = 0;
+        }
+    }
+
 
 
     void CheckInput()
@@ -122,11 +158,20 @@ public class CarController : MonoBehaviour
         wheelColliders.WheelRearRight.brakeTorque = inputBrake * carBrakePower * 0.3f;
     }
 
-    void ApplySteering()
+    void ApplySteering(float steeringAngle)
     {
-        carSpeed = carRB.velocity.magnitude;
+        
 
-        float steeringAngle = inputSteering * carSteeringCurve.Evaluate(carSpeed);
+        //float steeringAngle = inputSteering * carSteeringCurve.Evaluate(carSpeed);
+        //wheelColliders.WheelFrontLeft.steerAngle = steeringAngle;
+        //wheelColliders.WheelFrontRight.steerAngle = steeringAngle;
+
+        if (carSlipAngle < 120f)
+        {
+            steeringAngle += Vector3.SignedAngle(transform.forward, carRB.velocity + transform.forward, Vector3.up);
+        }
+        steeringAngle = Mathf.Clamp(steeringAngle, -maxSteering, maxSteering);
+
         wheelColliders.WheelFrontLeft.steerAngle = steeringAngle;
         wheelColliders.WheelFrontRight.steerAngle = steeringAngle;
     }
