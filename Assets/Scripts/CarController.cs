@@ -28,6 +28,9 @@ public class CarController : MonoBehaviour
     private float carSpeed;
     public AnimationCurve carSteeringCurve;
 
+    public ButtonController gasPedal;
+    public ButtonController brakePedal;
+
 
 
     // Start is called before the first frame update
@@ -64,6 +67,8 @@ public class CarController : MonoBehaviour
 
     void CheckInput()
     {
+        if (gasPedal.os)
+
         inputGas = Input.GetAxis("Vertical");
         inputSteering = Input.GetAxis("Horizontal");
 
