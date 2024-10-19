@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class gasButton : MonoBehaviour
+public class ButtonController: MonoBehaviour
 {
     public bool isPressed;
+
+    public float dampenPress = 0;
+    public float sensitivity = 2f;
 
     // Start is called before the first frame update
     void Start()
@@ -16,7 +19,16 @@ public class gasButton : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if (isPressed)
+        {
+            dampenPress += sensitivity * Time.deltaTime;
+        }
+        else
+        {
+            dampenPress -= sensitivity * Time.deltaTime;
+        }
+
+        dampenPress = Mathf.Clamp01(dampenPress);
     }
 
 

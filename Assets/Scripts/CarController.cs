@@ -31,6 +31,9 @@ public class CarController : MonoBehaviour
     public ButtonController gasPedal;
     public ButtonController brakePedal;
 
+    public ButtonController leftButton;
+    public ButtonController rightButton;
+
 
 
     // Start is called before the first frame update
@@ -67,10 +70,29 @@ public class CarController : MonoBehaviour
 
     void CheckInput()
     {
-        if (gasPedal.os)
-
         inputGas = Input.GetAxis("Vertical");
+
+        if (gasPedal.isPressed)
+        {
+            inputGas += gasPedal.dampenPress;
+        }
+
+        if (brakePedal.isPressed)
+        {
+            inputGas -= brakePedal.dampenPress;
+        }
+
         inputSteering = Input.GetAxis("Horizontal");
+
+        if (leftButton.isPressed)
+        {
+            inputSteering -= leftButton.dampenPress;
+        }
+
+        if (rightButton.isPressed)
+        {
+            inputSteering += rightButton.dampenPress;
+        }
 
         carSlipAngle = Vector3.Angle(transform.forward, carRB.velocity-transform.forward);
 
